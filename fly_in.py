@@ -14,6 +14,7 @@ class VerticeType(Enum):
 class Graph(BaseModel):
     nb_drones: int
     Vertices: list[Vertice] = Field(default_factory=list)
+    Edges: list[Edge] = Field(default_factory=list)
 
 
 class Vertice(BaseModel):
@@ -34,8 +35,8 @@ class Vertice(BaseModel):
 
 class Edge(BaseModel):
     name: str
-    zone_a: Vertice
-    zone_b: Vertice
+    zone_a: Vertice | None = None
+    zone_b: Vertice | None = None
     max_link_capacity: int = 1
 
 
@@ -45,8 +46,8 @@ class Drone:
         self.current_zone: Vertice | Edge = start
 
 
-def parser(name: str, Graph: Graph) -> None:
-    with open(name) as f:
+def parser(file: str, Graph: Graph) -> None:
+    with open(file) as f:
         for line in f:
             zone = None
             color = None
@@ -62,17 +63,38 @@ def parser(name: str, Graph: Graph) -> None:
                     if 'color' in meta:
                         color = meta.split("=")[1]
                     if "max_drones" in meta:
-                        max_drones = meta.split('=')[1]
+                        max_drones = int(meta.split('=')[1])
                     if "zone" in meta:
-                        zone = meta.split("=")[1]
-                Graph.Vertices.append(Vertice(line[0], x=int(line[1]), y=int(line[2]), color=color, max_drones=max_drones, zone_type=zone))
-            elif line.startswith('connection'):
-                pass
-                
+                        zone = VerticeType(meta.split("=")[1])
+                Graph.Vertices.append(Vertice(
+                    name=line[0],
+                    x=int(line[1]),
+                    y=int(line[2]),
+                    color=color,
+                    max_drones=max_drones if max_drones is not None else 1,
+                    zone_type=zone if zone is not None else VerticeType.normal,
+                ))
+            elif 'connection' in line:
+                line = line.split(': ')[1]
+                line = line.split()
+                Graph.Edges.append(Edge(
+                    name=line[0],
+                    max_link_capacity=int(line[1]) if len(line) > 1 else 1,
+                ))
+    for connection in Graph.Edges:
+        fill_connection(Graph, connection)
 
-
-
-
+def fill_connection(Graph: Graph, connection: Edge):
+    name1, name2 = connection.name.split('-')
+    print(name1, name2)
+    for Vertice in Graph.Vertices:
+        if Vertice.name == name1:
+            Vertice.Edges.append(connection)
+            connection.zone_a = Vertice
+            print(connection.name, Vertice.name)
+        if Vertice.name == name2:
+            Vertice.Edges.append(connection)
+            connection.zone_b = Vertice
 
 def main() -> None:
     pass
@@ -80,3 +102,4 @@ def main() -> None:
 i = Graph(nb_drones=0)
 parser("01_linear_path.txt", i)
 print(i.nb_drones)
+print(i.Vertices[0])
