@@ -29,6 +29,12 @@ class ZoneType(Enum):
     RESTRICTED = "restricted"
     PRIORITY = "priority"
 
+@dataclass
+class drone:
+    """A drone in the network."""
+
+    id: int
+    current_zone: Zone | Link | None = None
 
 @dataclass
 class Zone:
@@ -43,6 +49,7 @@ class Zone:
     color: str | None = None
     max_drones: int = 1
     connections: list[Link] = field(default_factory=list)
+    drones: list[drone] = field(default_factory=list)
 
     @property
     def cost(self) -> int:
@@ -57,6 +64,7 @@ class Link:
     a: str
     b: str
     capacity: int = 1
+    drone: drone | None = None
 
     @property
     def name(self) -> str:
@@ -71,8 +79,8 @@ class Graph:
     nb_drones: int = 0
     zones: dict[str, Zone] = field(default_factory=dict)
     links: dict[str, Link] = field(default_factory=dict)
-    start: str = ""
-    end: str = ""
+    start: Zone = None
+    end: Zone = None
 
 
 class MapParser:
@@ -157,11 +165,11 @@ class MapParser:
         if kind == "start_hub":
             if g.start:
                 raise ParseError(no, "more than one start_hub")
-            g.start = name
+            g.start = zone
         elif kind == "end_hub":
             if g.end:
                 raise ParseError(no, "more than one end_hub")
-            g.end = name
+            g.end = zone
         g.zones[name] = zone
 
     def _link(self, g: Graph, rest: str, no: int) -> None:
@@ -218,6 +226,15 @@ def main() -> None:
               f"{len(graph.links)} links\n graph.zones.path: {graph.zones['gate_hell1']}")
     except ParseError as e:
         print(e)
+
+def find_path(graph: Graph) -> list[str]:
+    try:
+        start = graph.start
+        while start:
+            
+                break
+        end = graph.end
+
 
 if __name__ == "__main__":
     main()
