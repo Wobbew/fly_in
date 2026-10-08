@@ -37,9 +37,12 @@ class Zone:
     name: str
     x: int
     y: int
+    price: int = -1
+    previous: Zone | None = None
     zone_type: ZoneType = ZoneType.NORMAL
     color: str | None = None
     max_drones: int = 1
+    connections: list[Link] = field(default_factory=list)
 
     @property
     def cost(self) -> int:
@@ -67,7 +70,7 @@ class Graph:
 
     nb_drones: int = 0
     zones: dict[str, Zone] = field(default_factory=dict)
-    links: dict[frozenset[str], Link] = field(default_factory=dict)
+    links: dict[str, Link] = field(default_factory=dict)
     start: str = ""
     end: str = ""
 
@@ -176,7 +179,10 @@ class MapParser:
         if "max_link_capacity" in meta:
             cap = self._positive(
                 meta["max_link_capacity"], no, "max_link_capacity")
-        g.links[key] = Link(a, b, cap)
+        link = Link(a, b, cap)
+        g.links[key] = link
+        g.zones[a].connections.append(link)
+
 
 def map_difficulty():
     difficulty = []
@@ -209,7 +215,7 @@ def main() -> None:
         path = choose_map() if len(sys.argv) == 1 else sys.argv[1]
         graph = MapParser().parse(path)
         print(f"{graph.nb_drones} drones, {len(graph.zones)} zones, "
-              f"{len(graph.links)} links")
+              f"{len(graph.links)} links\n graph.zones.path: {graph.zones['gate_hell1']}")
     except ParseError as e:
         print(e)
 
