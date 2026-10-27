@@ -1,7 +1,8 @@
 """Simulation logic: drone setup, cost map and turn processing."""
-
+import sys
 from errors import ParseError
 from models import Graph, Drone, Zone, ZoneType
+sys.setrecursionlimit(500)
 
 
 def set_up_drones(g: Graph) -> None:

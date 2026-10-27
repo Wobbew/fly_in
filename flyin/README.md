@@ -168,4 +168,4 @@ Because each turn is triggered with the space bar, you can follow the simulation
 
 ### Use of AI
 
--  AI was used to discuss approaches to help fix mypy errors, to split the code into modules, to help write this README, brainstorming, and understanding how to use pygame.
+-  AI was used to discuss approaches, to help fix mypy errors, to split the code into modules, to help write this README, for brainstormings how to start it and to make a plan, and understanding how to use pygame.

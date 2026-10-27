@@ -9,8 +9,8 @@ from simulation import game_round, is_finished
 class Renderer:
     """Draws the network and the drones, and runs the main loop."""
 
-    WIDTH, HEIGHT, MARGIN = 1800, 1000, 80
-    SPEED = 6
+    WIDTH, HEIGHT, MARGIN = 2600, 1000, 120
+    SPEED = 12
 
     def __init__(self, graph: Graph) -> None:
         """Set up the window and load the drone sprite."""
@@ -78,14 +78,14 @@ class Renderer:
             pygame.draw.line(self.screen, (120, 120, 120),
                              self._to_screen(a.x, a.y),
                              self._to_screen(b.x, b.y),
-                             width=link.capacity * 2)
+                             width=link.capacity * 10)
 
     def _draw_zones(self) -> None:
         """Draw the zones as circles in their map color."""
         for z in self.graph.zones.values():
             pos = self._to_screen(z.x, z.y)
-            pygame.draw.circle(self.screen, self._color(z.color), pos, 20)
-            pygame.draw.circle(self.screen, (255, 255, 255), pos, 20, 2)
+            pygame.draw.circle(self.screen, self._color(z.color), pos, z.max_drones * 5 + 20)
+            pygame.draw.circle(self.screen, (255, 255, 255), pos, z.max_drones * 5 + 20, 2)
 
     def run(self) -> None:
         """Main loop: SPACE plays a turn, closing the window quits."""
@@ -101,8 +101,18 @@ class Renderer:
                     game_round(self.graph)
                     rounds += 1
             if is_finished(self.graph):
-                running = False
                 print(f"Game finished after {rounds} rounds.")
+                while running:
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT:
+                            running = False
+                    self.screen.fill((20, 20, 30))
+                    self._draw_links()
+                    self._draw_zones()
+                    self.move_drone()
+                    self._draw_drones()
+                    pygame.display.flip()
+                    clock.tick(60)
             self.screen.fill((20, 20, 30))
             self._draw_links()
             self._draw_zones()
